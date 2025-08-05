@@ -1,0 +1,35 @@
+# Common configuration for segmentation model training
+experiment_name: "ResNet34-DiceLoss"  # Experiment name
+seed: 42
+
+# Data configuration
+data:
+  train_data_dir: "./data/train"  # Path to training dataset directory
+  val_data_dir: "./data/val"      # Path to validation dataset directory
+  num_workers: 4                  # Number of data loader workers
+  repeats: 6                      # Number of times to repeat the dataset for training
+
+# Model configuration
+model:
+  arch: "Unet"           # Model architecture (Unet, UnetPlusPlus, DeepLabV3, etc.)
+  encoder_name: "resnet34"  # Encoder backbone
+  encoder_weights: "imagenet"  # Pre-trained weights
+  out_classes: 1         # Number of output classes
+
+# Training configuration
+training:
+  batch_size: 16         # Batch size
+  max_epochs: 500        # Maximum number of epochs
+  learning_rate: 0.0001  # Learning rate
+  use_gpu: true          # Use GPU if available
+  gpus: [1]               # Number of GPUs to use or list of selected GPU ids
+  precision: 16          # Training precision (16 for mixed precision, 32 for full)
+  accumulate_grad_batches: 1  # Gradient accumulation steps
+  save_dir: "./checkpoints"   # Directory to save model checkpoints
+  save_top_k: 3          # Number of best models to keep
+  monitor_metric: "val_loss"  # Metric to monitor for checkpointing
+  loss_fn: "DiceLoss"    # Loss function to use (DiceLoss, FocalLoss, MCCLoss)
+
+# Logging configuration
+logging:
+  wandb_group: null               # Weights & Biases group name (optional)
