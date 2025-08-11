@@ -1,12 +1,14 @@
-import onnxruntime
-import numpy as np
 import cv2
+import numpy as np
+import torch
 
-def predict(image, onnx_session):
+from model import SegmentationModel
+
+def predict(image, model):
     """Run prediction on a single image using the trained model.
     Args:
         image: Input image as a numpy array
-        onnx_session: ONNX Runtime session for inference
+        model: Trained segmentation model
     Returns:
         Predicted mask as a numpy array
     """
@@ -22,17 +24,18 @@ def predict(image, onnx_session):
     if pad_h > 0 or pad_w > 0:
         image = np.pad(image, ((0, 0), (0, pad_h), (0, pad_w)), mode='constant', constant_values=0)
 
-    # Preprocess the image
-    
-    input_tensor = torch.from_numpy(image).unsqueeze(0).float().to(model.device)  
-    pred = model(input_tensor)
-    pred_mask = torch.sigmoid(pred).squeeze().cpu().numpy()
-    pred_mask = (pred_mask > 0.5).astype('uint8') * 255
-    # Remove padding
-    if pad_h > 0 or pad_w > 0:
-        pred_mask = pred_mask[:h, :w]
-    return pred_mask
+    with torch.no_grad():
+        # Preprocess the image
+        input_tensor = torch.from_numpy(image).unsqueeze(0).float().to(model.device)  
+        pred = model(input_tensor)
+        pred_mask = torch.sigmoid(pred).squeeze().cpu().numpy()
+        pred_mask = (pred_mask > 0.5).astype('uint8') * 255
+        # Remove padding
+        if pad_h > 0 or pad_w > 0:
+            pred_mask = pred_mask[:h, :w]
+        return pred_mask
 
+    
 def load_model(model_ckpt="model.ckpt", gpu_id=0):
     """Load the trained segmentation model from checkpoint.
     Args:

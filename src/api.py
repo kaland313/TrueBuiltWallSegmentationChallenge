@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 import os
 
-from model import SegmentationModel
-from predict import load_model, predict_in_patches, clean_mask_via_morph_ops
+from predict.torch import predict, load_model
+from predict.common import predict_in_patches, clean_mask_via_morph_ops
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ async def run_inference(image: UploadFile, type: str)-> Response:
 
     if type == "wall":
         model = load_model(model_ckpt=os.environ.get("MODEL_PATH"), gpu_id=0)
-        predicted_mask = predict_in_patches(img, model)
+        predicted_mask = predict_in_patches(img, model, pred_fn=predict)
         cleaned_mask = clean_mask_via_morph_ops(predicted_mask)
         # Return the cleaned mask as a response
         _, buffer = cv2.imencode('.png', cleaned_mask)

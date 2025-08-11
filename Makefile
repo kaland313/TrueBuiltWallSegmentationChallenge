@@ -4,9 +4,15 @@ workdir_base=/workspace
 workdir=$(workdir_base)/tbchallenge
 server_port=3000
 host_port=3000
-model_path=$(workdir)/model.ckpt
+onnx_model_path=$(workdir)/model.onnx
 
-run: #build
+build:
+	docker build --tag $(image_name)  .
+
+build-serve:
+	docker build --file Dockerfile_serve --tag $(image_name)_serve .
+	
+run: build
 	nvidia-docker run \
 	-it --rm \
 	--shm-size 16G \
@@ -21,18 +27,12 @@ run: #build
 	$(image_name) \
 	/bin/bash
 
-build:
-	docker build --tag $(image_name)  .
-
-build-serve:
-	docker build --file Dockerfile_serve --tag $(image_name)_serve .
-
 serve: build-serve
 	nvidia-docker run \
 	-it --rm \
 	--shm-size 16G \
 	-e PYTHONPATH=$(workdir_base) \
-	-e MODEL_PATH=$(model_path) \
+	-e ONNX_MODEL_PATH=$(onnx_model_path) \
 	-p $(host_port):$(server_port) \
 	--name $(container_name)_serve \
 	-w $(workdir) \
