@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import os
 
-from model import SegmentationModel
 from predict import load_model, predict_in_patches, clean_mask_via_morph_ops
 
 app = FastAPI()

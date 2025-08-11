@@ -1,11 +1,13 @@
 # Common configuration for segmentation model training
-experiment_name: "ResNet34-DiceLoss"  # Experiment name
+experiment_name: "ResNet34-DiceLoss-WallDoor"  # Experiment name
 seed: 42
 
 # Data configuration
 data:
   train_data_dir: "./data/train"  # Path to training dataset directory
   val_data_dir: "./data/val"      # Path to validation dataset directory
+  image_folder: "images"          # Folder containing images
+  mask_folder: "masks_wd"         # Folder containing masks (wall / not
   num_workers: 4                  # Number of data loader workers
   repeats: 6                      # Number of times to repeat the dataset for training
 
@@ -14,7 +16,7 @@ model:
   arch: "Unet"           # Model architecture (Unet, UnetPlusPlus, DeepLabV3, etc.)
   encoder_name: "resnet34"  # Encoder backbone
   encoder_weights: "imagenet"  # Pre-trained weights
-  out_classes: 1         # Number of output classes
+  out_classes: 3         # Number of output classes
 
 # Training configuration
 training:

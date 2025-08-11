@@ -10,15 +10,17 @@ from pathlib import Path
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from model import SegmentationModel
+from model_multiclass import SegmentationModel
 
 class SegmentationDataset(Dataset):
     """Custom dataset for segmentation tasks"""
     
-    def __init__(self, image_paths, mask_paths, transforms=None):
+    def __init__(self, image_paths, mask_paths, transforms=None, num_classes=1):
         self.image_paths = image_paths
         self.mask_paths = mask_paths
         self.transforms = transforms
+        assert num_classes in [1, 3], "out_classes must be 1 (binary) or 3 (multiclass)"
+        self.num_classes = num_classes
         print(self.image_paths)
         print(self.mask_paths)
     
@@ -34,8 +36,14 @@ class SegmentationDataset(Dataset):
         image = read_image(image_path, mode=ImageReadMode.RGB).float() / 255.0
         
         # Load mask as grayscale
-        mask = read_image(mask_path, mode=ImageReadMode.GRAY).float() / 255.0
-        # mask = mask.squeeze(0)  # Remove channel dimension for mask
+        mask = read_image(mask_path, mode=ImageReadMode.GRAY)
+        # import numpy as np
+        # print(np.unique(mask))
+        # replace 128 with 1 and 255 with 2 for multiclass
+        if self.num_classes == 3:
+            mask = torch.where(mask == 119, torch.tensor(1), mask)
+            mask = torch.where(mask == 255, torch.tensor(2), mask)
+        mask = mask.float()
         
         # Apply transforms
         if self.transforms:
@@ -69,12 +77,12 @@ def get_transforms():
     return train_transforms, val_transforms
 
 
-def prepare_data(data_dir, repeats=1):
+def prepare_data(data_dir, image_folder, mask_folder, repeats=1):
     """Prepare training and validation datasets"""
     
     # Assuming data structure: data_dir/images/ and data_dir/masks/
-    image_dir = Path(data_dir) / "images"
-    mask_dir = Path(data_dir) / "masks"
+    image_dir = Path(data_dir) / image_folder
+    mask_dir = Path(data_dir) / mask_folder
     # Resolve paths
     image_dir = image_dir.resolve()
     mask_dir = mask_dir.resolve()
@@ -101,13 +109,19 @@ def main(cfg: DictConfig):
     L.seed_everything(cfg.seed, workers=True)  # Set random seed for reproducibility
     
     # Prepare data
-    train_images, train_masks = prepare_data(cfg.data.train_data_dir, repeats=cfg.data.repeats)
-    val_images, val_masks = prepare_data(cfg.data.val_data_dir)
+    train_images, train_masks = prepare_data(cfg.data.train_data_dir, 
+                                             image_folder=cfg.data.image_folder,
+                                             mask_folder=cfg.data.mask_folder,
+                                             repeats=cfg.data.repeats)
+    val_images, val_masks = prepare_data(cfg.data.val_data_dir, 
+                                             image_folder=cfg.data.image_folder,
+                                             mask_folder=cfg.data.mask_folder,
+                                             repeats=cfg.data.repeats)
     train_transforms, val_transforms = get_transforms()
     
     # Create datasets
-    train_dataset = SegmentationDataset(train_images, train_masks, train_transforms)
-    val_dataset = SegmentationDataset(val_images, val_masks, val_transforms)
+    train_dataset = SegmentationDataset(train_images, train_masks, train_transforms, num_classes=cfg.model.out_classes)
+    val_dataset = SegmentationDataset(val_images, val_masks, val_transforms, num_classes=cfg.model.out_classes)
     
     # Create data loaders
     train_loader = DataLoader(
@@ -129,8 +143,8 @@ def main(cfg: DictConfig):
     model = SegmentationModel(
         arch=cfg.model.arch,
         encoder_name=cfg.model.encoder_name,
-        out_classes=1, # Wall / not wall binary segmentation
-        in_channels=3, # Grayscale images
+        out_classes=cfg.model.out_classes, # Wall / not wall binary segmentation
+        in_channels=3,
         learning_rate=cfg.training.learning_rate,
         encoder_weights=cfg.model.encoder_weights,
         loss_fn=cfg.training.loss_fn

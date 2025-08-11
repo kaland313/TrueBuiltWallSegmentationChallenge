@@ -5,7 +5,7 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
-from model import SegmentationModel
+from model_multiclass import SegmentationModel
 
 def predict(image, model):
     """Run prediction on a single image using the trained model.
@@ -31,8 +31,10 @@ def predict(image, model):
         # Preprocess the image
         input_tensor = torch.from_numpy(image).unsqueeze(0).float().to(model.device)  
         pred = model(input_tensor)
-        pred_mask = torch.sigmoid(pred).squeeze().cpu().numpy()
-        pred_mask = (pred_mask > 0.5).astype('uint8') * 255
+        # pred_mask = torch.sigmoid(pred).squeeze().cpu().numpy()
+        print(f"Pred shape: {pred.shape}")
+        pred_mask = torch.argmax(pred.squeeze(), dim=0).cpu().numpy().astype('uint8')*100
+        # pred_mask = (pred_mask > 0.5).astype('uint8') * 255
         # Remove padding
         if pad_h > 0 or pad_w > 0:
             pred_mask = pred_mask[:h, :w]
@@ -59,6 +61,7 @@ def load_model(model_ckpt="model.ckpt", gpu_id=0):
     return model
 
     
+
 def predict_in_patches(image, model, patch_size=512):
     """
     Run prediction on an image in patches to avoid memory issues and see progress.
