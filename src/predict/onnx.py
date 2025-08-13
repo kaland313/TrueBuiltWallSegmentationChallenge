@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import onnxruntime
@@ -17,10 +18,10 @@ def predict(image, onnx_session):
         image = image.transpose(2, 0, 1) 
     image = image / 255.0  # Normalize to [0, 1]
 
-    # Pad to next multiple of 32
+    # Pad to 512
     h, w = image.shape[1:3]
-    pad_h = (32 - h % 32) % 32
-    pad_w = (32 - w % 32) % 32
+    pad_h = (512 - h) 
+    pad_w = (512 - w) 
     if pad_h > 0 or pad_w > 0:
         image = np.pad(image, ((0, 0), (0, pad_h), (0, pad_w)), mode='constant', constant_values=0)
 
@@ -28,12 +29,13 @@ def predict(image, onnx_session):
     input_np_tensor = image[np.newaxis, :].astype(np.float32)
     input_name = onnx_session.get_inputs()[0].name # The model is expected to have only one input
     pred = onnx_session.run([], {input_name: input_np_tensor})
+    pred = pred[0]  # Get the first output, the model is expected to have only one output
     pred = pred.squeeze(0) # Remove the batch dim
 
     if pred.shape[0]==1: # Support binary and multi-class segmentation
-        pred_mask = (pred > 0).astype('uint8') * 255
+        pred_mask = (pred > 0).squeeze().astype('uint8') * 255
     else:
-        pred_mask = np.argmax(pred, axis=1)
+        pred_mask = np.argmax(pred, axis=0)
 
     # Remove padding
     if pad_h > 0 or pad_w > 0:
@@ -47,6 +49,7 @@ def load_model(onnx_model_path="model.onnx"):
     Returns:
         Loaded model
     """
+    assert os.path.exists(onnx_model_path), f"Model file {onnx_model_path} does not exist."
     session = onnxruntime.InferenceSession(onnx_model_path,
                                            providers=["CUDAExecutionProvider",
                                                       "CPUExecutionProvider"])

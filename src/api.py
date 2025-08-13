@@ -1,11 +1,11 @@
-from fastapi import FastAPI, File, UploadFile, Query
-from fastapi.responses import JSONResponse, Response, FileResponse
+import os
 import cv2
 import numpy as np
-import os
+from fastapi import FastAPI, UploadFile
+from fastapi.responses import JSONResponse, Response
 
-from predict.torch import predict, load_model
-from predict.common import predict_in_patches, clean_mask_via_morph_ops
+from predict.common import clean_mask_via_morph_ops, predict_in_patches
+from predict.onnx import load_model, predict
 
 app = FastAPI()
 
@@ -17,7 +17,7 @@ async def run_inference(image: UploadFile, type: str)-> Response:
     img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
     if type == "wall":
-        model = load_model(model_ckpt=os.environ.get("MODEL_PATH"), gpu_id=0)
+        model = load_model(os.environ.get("ONNX_MODEL_PATH"))
         predicted_mask = predict_in_patches(img, model, pred_fn=predict)
         cleaned_mask = clean_mask_via_morph_ops(predicted_mask)
         # Return the cleaned mask as a response

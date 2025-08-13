@@ -5,8 +5,8 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
-from model import load_model
-from src.predict.torch import (
+from predict.torch import load_model, predict
+from predict.common import (
     predict_in_patches,
     clean_mask_via_morph_ops,
     overlay_mask
@@ -36,26 +36,26 @@ def process_architectural_drawing(input_path, output_dir, model_ckpt="model.ckpt
         # Segment the image using the cnn model
         print("   Running CNN model for segmentation...")
         model = load_model(model_ckpt, gpu_id)
-        predicted_mask = predict_in_patches(image, model)
-        segmented_img_path = output_dir / f"{base_name}_step1_segmented.png"
-        cv2.imwrite(str(segmented_img_path), predicted_mask)
+        predicted_mask = predict_in_patches(image, model, pred_fn=predict)
+        segmented_img_path = output_dir / f"{base_name}_segmented.png"
+        cv2.imwrite(str(segmented_img_path), predicted_mask*100)
         print(f"    Saved: {segmented_img_path.name}")
 
         # Clean the mask using morphological operations
         print("   Cleaning mask with morphological operations...")
         cleaned_mask = clean_mask_via_morph_ops(predicted_mask)
-        cleaned_img_path = output_dir / f"{base_name}_step2_cleaned.png"
-        cv2.imwrite(str(cleaned_img_path), cleaned_mask)
+        cleaned_img_path = output_dir / f"{base_name}_cleaned.png"
+        cv2.imwrite(str(cleaned_img_path), cleaned_mask*100)
         print(f"    Saved: {cleaned_img_path.name}")
 
         # Overlay the initial and cleaned masks on the original image
         print("   Overlaying masks on the original image...")
         overlayed_initial = overlay_mask(image, predicted_mask)
-        overlayed_initial_path = output_dir / f"{base_name}_overlay_initial.png"
+        overlayed_initial_path = output_dir / f"{base_name}_initial_overlay.png"
         cv2.imwrite(str(overlayed_initial_path), overlayed_initial)
         print(f"    Saved: {overlayed_initial_path.name}")
         overlayed_cleaned = overlay_mask(image, cleaned_mask)
-        overlayed_cleaned_path = output_dir / f"{base_name}_overlay_cleaned.png"
+        overlayed_cleaned_path = output_dir / f"{base_name}_cleaned_overlay.png"
         cv2.imwrite(str(overlayed_cleaned_path), overlayed_cleaned)
         print(f"    Saved: {overlayed_cleaned_path.name}")
 

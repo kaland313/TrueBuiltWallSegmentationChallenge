@@ -18,7 +18,7 @@ def close_gaps(image, kernel_size=15, iterations=1):
     inverted_diagonal_kernel = np.fliplr(diagonal_kernel)
 
     # Apply morphological closing with vertical kernel
-    for kernel in [vertical_kernel, horizontal_kernel, diagonal_kernel, inverted_diagonal_kernel]:
+    for kernel in [vertical_kernel, horizontal_kernel]:
         closed_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel, iterations=iterations)
         image = cv2.bitwise_or(image, closed_image)
 

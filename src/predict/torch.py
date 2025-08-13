@@ -4,6 +4,18 @@ import torch
 
 from model import SegmentationModel
 
+def preference_bias(logits, preferred_classes, strength=0.1):
+    """Bias scaled to local logit range"""
+    logit_std = logits.std(keepdim=True)
+    bias_value = strength * logit_std
+    # print(f"Applying bias of {bias_value} to preferred classes: {preferred_classes}")
+    
+    bias = torch.zeros_like(logits)
+    for c in preferred_classes:
+        bias[c, ...] = bias_value
+    
+    return logits + bias
+
 def predict(image, model):
     """Run prediction on a single image using the trained model.
     Args:
@@ -28,8 +40,13 @@ def predict(image, model):
         # Preprocess the image
         input_tensor = torch.from_numpy(image).unsqueeze(0).float().to(model.device)  
         pred = model(input_tensor)
-        pred_mask = torch.sigmoid(pred).squeeze().cpu().numpy()
-        pred_mask = (pred_mask > 0.5).astype('uint8') * 255
+        pred = pred.squeeze(0) # Remove the batch dim
+
+        if pred.shape[0]==1: # Support binary and multi-class segmentation
+            pred_mask = (pred_mask > 0).cpu().numpy().astype('uint8') * 255
+        else:
+            pred = preference_bias(pred, preferred_classes=[1,2], strength=1.2)
+            pred_mask = torch.argmax(pred, dim=0).cpu().numpy()
         # Remove padding
         if pad_h > 0 or pad_w > 0:
             pred_mask = pred_mask[:h, :w]

@@ -4,7 +4,7 @@ workdir_base=/workspace
 workdir=$(workdir_base)/tbchallenge
 server_port=3000
 host_port=3000
-onnx_model_path=$(workdir)/model.onnx
+onnx_model_path=$(workdir)/model_wd.onnx
 
 build:
 	docker build --tag $(image_name)  .
@@ -35,6 +35,8 @@ serve: build-serve
 	-e ONNX_MODEL_PATH=$(onnx_model_path) \
 	-p $(host_port):$(server_port) \
 	--name $(container_name)_serve \
-	-w $(workdir) \
-	$(image_name) \
-	/bin/bash
+	-v $(shell pwd):$(workdir) \
+	-w $(workdir)/src \
+	$(image_name)_serve \
+	uvicorn api:app --host 0.0.0.0 --port 3000
+	

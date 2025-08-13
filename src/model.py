@@ -1,9 +1,9 @@
 import torch
-import lightning as L
+import pytorch_lightning as pl
 import segmentation_models_pytorch as smp
 import wandb
 
-class SegmentationModel(L.LightningModule):
+class SegmentationModel(pl.LightningModule):
     """PyTorch Lightning module for segmentation"""
     
     def __init__(
