@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from tqdm import trange
 
 def overlay_mask(image:np.ndarray, mask:np.ndarray, alpha=0.5):
     """
@@ -56,3 +57,22 @@ def overlay_rooms(image: np.ndarray, room_image: np.ndarray, alpha=0.5):
     blended[room_image == 0] = image[room_image == 0]
     
     return blended.astype(np.uint8)
+
+
+def colorize_regions(mask):
+    """Colorize indexed regions in a mask. 
+    0 is not colored, its considered background and colored black.
+    Args:
+        mask: Indexed mask image
+    Returns:
+        Colorized image
+    """
+
+    # Create a color map
+    num_labels = np.max(mask) + 1
+    colors = np.random.randint(0, 256, size=(num_labels, 3), dtype=np.uint8)
+    colors[0] = [0, 0, 0]  # Background stays black
+    
+    # Vectorized colorization - this is the key speedup
+    colorized_image = colors[mask]
+    return colorized_image

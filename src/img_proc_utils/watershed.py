@@ -10,7 +10,8 @@ def watershed_segmentation(mask):
     Args:
         mask: Binary mask image
     Returns:
-        Segmented image
+        markers: Segmented image as watershed markers
+        dist: Distance transform of the mask (for development purposes)
     """
     # Binarize the mask if not already binary
     mask = (mask > 0).astype(np.uint8) * 255
@@ -21,34 +22,43 @@ def watershed_segmentation(mask):
     dist = cv2.distanceTransform(mask, cv2.DIST_L2, 3)
     # Normalize the distance image by subtracting the minimum value 
     dist = dist - dist.min()
-    # Threshold the image to obtain "peaks"
-    # This will be the markers for the foreground objects
+    # Threshold the image to obtain "peaks", these will be the markers for the foreground objects
     # The arbitrary threshold value of 32 is chosen empirically
     # Adaptive thresholding doesn't work well, because there are very large and small regions
-    dist_tresh_large = dist > 32
+    dist_threshold = dist > 32
 
     # Identify connected components in the thresholded distance image
-    dist_uint8 = (dist_tresh_large * 255).astype(np.uint8) 
-    num_labels, markers = cv2.connectedComponents(dist_uint8, connectivity=4, ltype=cv2.CV_32S)
+    dist_uint8 = (dist_threshold * 255).astype(np.uint8) 
+    num_labels, markers, stats, _ = cv2.connectedComponentsWithStats(dist_uint8, connectivity=4, ltype=cv2.CV_32S, stats=cv2.CC_STAT_AREA)
 
-    # Threshold using a smaller value to readd some of the smaller regions
-    dist_tresh_small = dist > 32
-    dist_uint8_small = (dist_tresh_small * 255).astype(np.uint8)
-    num_labels_small, markers_small = cv2.connectedComponents(dist_uint8_small, connectivity=4, ltype=cv2.CV_32S)
-    # Add small regions to the markers if they don't overlap with any pixels from dist_tresh_large
-    for label in trange(1, num_labels_small):
-        small_region_mask = markers_small == label
-        if not np.any(small_region_mask & dist_tresh_large):
-            markers[small_region_mask] = num_labels + 1
-            num_labels += 1
+    # Apply a higher distance threshold to the largest component(s)
+    # This is to help differentiate between the background of the drawing and rooms adjecent to it
+    # Hacky, but works well for the current dataset.
+    areas = stats[1:, cv2.CC_STAT_AREA]
+    top_areas = np.argsort(areas)[-1:]  # Get indices of the top 10 largest components
+    # Drop if the area is less than 1000000 pixels
+    top_areas = top_areas[areas[top_areas] > 1_000_000]
+    if len(top_areas) > 0:
+        # add 1 to the indices, because the markers array starts from 1
+        top_areas += 1  
+        top_areas_mask = np.isin(markers, top_areas)
+        dist[~top_areas_mask] = 0
+        dist_threshold_large = dist > 100
+        # Merge the two distance maps 
+        dist_threshold[top_areas_mask] = dist_threshold_large[top_areas_mask]
 
-    dist = markers > 0
-    
+        dist_uint8 = (dist_threshold * 255).astype(np.uint8)
+        num_labels, markers = cv2.connectedComponents(dist_uint8, connectivity=4, ltype=cv2.CV_32S)
+       
+    dist = dist_threshold
+        
     # Watershed expects 8-bit 3-channel image
     mask_8UC3 = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
     # Perform the watershed algorithm
     cv2.watershed(mask_8UC3, markers)
-    #mark = np.zeros(markers.shape, dtype=np.uint8)
+    # Set watershed boundaries to background
+    markers[markers == -1] = 0
+
     # Set walls to background
     markers[mask==0] = 0
 

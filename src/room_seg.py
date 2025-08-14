@@ -6,14 +6,12 @@ from tqdm import tqdm
 import numpy as np
 
 from img_proc_utils import (
-    skeletonize_in_patches,
-    hough_lines,
-    line_segment_detector,
-    close_gaps,
     watershed_segmentation,
-    colorize_regions
+    colorize_regions,
+    overlay_rooms,
+    overlay_mask,
 )
-from predict.common import overlay_rooms, overlay_mask, clean_mask_via_morph_ops    
+from predict.common import clean_mask_via_morph_ops    
 
 def process_architectural_drawing(input_path, output_dir, image_path=None):
     """
@@ -43,27 +41,6 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
         # Get the base filename without extension
         base_name = input_path.stem
 
-        # # Skeletonize the image
-        # print("   Skeletonizing the image...")
-        # thinned_image = skeletonize_in_patches(image)
-        # thinned_img_path = output_dir / f"{base_name}_seg_thinned.png"
-        # cv2.imwrite(str(thinned_img_path), thinned_image)
-        # print(f"    Saved: {thinned_img_path.name}")
-        
-        # # Run hough transform to detect lines
-        # print("   Detecting lines using Hough Transform...")
-        # lines, line_image = line_segment_detector(image)
-        # hough_img_path = output_dir / f"{base_name}_seg_lines.png"
-        # cv2.imwrite(str(hough_img_path), line_image)
-        # print(f"    Saved: {hough_img_path.name}")
-
-        # # Close gaps in the lines
-        # print("   Closing gaps in the lines...")
-        # closed_image = close_gaps(image)
-        # closed_img_path = output_dir / f"{base_name}_seg_closed.png"
-        # cv2.imwrite(str(closed_img_path), closed_image)
-        # print(f"    Saved: {closed_img_path.name}")
-
         # Clean the mask using morphological operations
         print("   Cleaning mask with morphological operations...")
         cleaned_mask = clean_mask_via_morph_ops(mask)
@@ -71,6 +48,7 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
         # Run watershed segmentation
         print("   Running watershed segmentation...")
         markers, dist = watershed_segmentation(cleaned_mask)
+        print("   Colorizing regions...")
         segmented_image = colorize_regions(markers)
         segmented_img_path = output_dir / f"{base_name}_seg_watershed.png"
         cv2.imwrite(str(segmented_img_path), segmented_image)

@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
-import lightning as L
-from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.loggers.wandb import WandbLogger
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers.wandb import WandbLogger
 import torchvision.transforms.v2 as transforms
 from torchvision import tv_tensors 
 from torchvision.io import read_image, ImageReadMode
@@ -10,7 +10,7 @@ from pathlib import Path
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from model_multiclass import SegmentationModel
+from model import SegmentationModel
 
 class SegmentationDataset(Dataset):
     """Custom dataset for segmentation tasks"""
@@ -106,7 +106,7 @@ def main(cfg: DictConfig):
     # Print configuration
     print(OmegaConf.to_yaml(cfg))
 
-    L.seed_everything(cfg.seed, workers=True)  # Set random seed for reproducibility
+    pl.seed_everything(cfg.seed, workers=True)  # Set random seed for reproducibility
     
     # Prepare data
     train_images, train_masks = prepare_data(cfg.data.train_data_dir, 
@@ -170,7 +170,7 @@ def main(cfg: DictConfig):
 
     
     # Trainer
-    trainer = L.Trainer(
+    trainer = pl.Trainer(
         max_epochs=cfg.training.max_epochs,
         accelerator='gpu' if torch.cuda.is_available() and cfg.training.use_gpu else 'cpu',
         devices=cfg.training.gpus if torch.cuda.is_available() and cfg.training.use_gpu else 'auto',

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import torch
 
-from model import SegmentationModel
+from src.model.model import SegmentationModel
 
 def preference_bias(logits, preferred_classes, strength=1.):
     """Bias scaled to local logit range"""
