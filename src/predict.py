@@ -77,7 +77,7 @@ def main():
                         help="Output folder (default: ./resuts_wall/)")
     parser.add_argument("-g", "--gpu_id", type=int, default=0,
                         help="GPU ID to use for inference (default: 0)")
-    parser.add_argument("-m", "--model_ckpt", default="model_wd.ckpt",
+    parser.add_argument("-m", "--model_ckpt", default="model.ckpt",
                         help="Path to the model checkpoint (default: model.ckpt)")
     
     args = parser.parse_args()

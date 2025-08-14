@@ -5,10 +5,10 @@ host_port=3000
 onnx_model_path=$(workdir)/model_wd.onnx
 
 build:
-	docker build --tag $(image_name)  .
+	docker build --file docker/Dockerfile --tag $(image_name)  .
 
 build-serve:
-	docker build --file Dockerfile_serve --tag $(image_name)_serve .
+	docker build --file docker/Dockerfile_serve --tag $(image_name)_serve .
 	
 run: build
 	nvidia-docker run \
@@ -36,3 +36,8 @@ serve: build-serve
 	$(image_name)_serve \
 	uvicorn api:app --host 0.0.0.0 --port 3000
 	
+make stop:
+	docker stop $(container_name)
+
+make stop-serve:
+	docker stop $(container_name)_serve

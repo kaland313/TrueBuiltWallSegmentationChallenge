@@ -1,0 +1,12 @@
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+# Install Python and opencv dependencies
+RUN apt-get update && apt-get install -y python3.10 python3-pip ffmpeg libsm6 libxext6
+
+# Istall ONNX runtime with GPU support
+RUN pip3 install flatbuffers==25.2.10 numpy==1.26.4 packaging==25.0 protobuf==6.31.1 sympy==1.14.0
+RUN pip3 install onnxruntime-gpu==1.20.1 --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-11/pypi/simple/
+
+# Install additional dependencies for serving
+COPY docker/requirements_serve.txt .
+RUN pip3 install -r requirements_serve.txt

@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from pathlib import Path
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse, Response
 from typing import Literal
@@ -32,7 +33,8 @@ async def run_inference(image: UploadFile,
 
         # Return the cleaned mask as a response
         _, buffer = cv2.imencode('.png', cleaned_wall_mask)
-        headers = {'Content-Disposition': f'attachment; filename="{image.filename}"'}
+        filename = f"{Path(image.filename).stem}_wall.png"
+        headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
         return Response(buffer.tobytes(), headers=headers, media_type='image/png')
     elif type == "room":
         # Load the model and run inference
@@ -43,11 +45,12 @@ async def run_inference(image: UploadFile,
 
         # Colorize the mask for visualization
         if not return_raw_segmentation_ids:
-            colorized_room_mask = colorize_regions(room_mask)
+            room_mask = colorize_regions(room_mask)
             
         # Return the cleaned mask as a response
-        _, buffer = cv2.imencode('.png', colorized_room_mask)
-        headers = {'Content-Disposition': f'attachment; filename="{image.filename}"'}
+        _, buffer = cv2.imencode('.png', room_mask)
+        filename = f"{Path(image.filename).stem}_room.png"
+        headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
         return Response(buffer.tobytes(), headers=headers, media_type='image/png')   
     else:
         result = {"error": f"Unsupported type: {type}"}

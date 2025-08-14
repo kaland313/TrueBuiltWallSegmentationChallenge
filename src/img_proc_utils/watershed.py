@@ -32,10 +32,10 @@ def watershed_segmentation(mask):
     num_labels, markers, stats, _ = cv2.connectedComponentsWithStats(dist_uint8, connectivity=4, ltype=cv2.CV_32S, stats=cv2.CC_STAT_AREA)
 
     # Apply a higher distance threshold to the largest component(s)
-    # This is to help differentiate between the background of the drawing and rooms adjecent to it
+    # This is to help differentiate between the large outside areas and rooms adjecent to them. The sample plans have 1-2 such large areas.
     # Hacky, but works well for the current dataset.
     areas = stats[1:, cv2.CC_STAT_AREA]
-    top_areas = np.argsort(areas)[-1:]  # Get indices of the top 10 largest components
+    top_areas = np.argsort(areas)[-2:]  # Get indices of the top 10 largest components
     # Drop if the area is less than 1000000 pixels
     top_areas = top_areas[areas[top_areas] > 1_000_000]
     if len(top_areas) > 0:

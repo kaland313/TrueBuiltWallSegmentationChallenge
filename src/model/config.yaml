@@ -1,5 +1,5 @@
 # Common configuration for segmentation model training
-experiment_name: "Debug"  # Experiment name
+experiment_name: "ResNet34-DiceLoss"  # Experiment name
 seed: 42
 
 # Data configuration
