@@ -49,15 +49,18 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
         print("   Running watershed segmentation...")
         markers, dist = watershed_segmentation(cleaned_mask)
         cv2.imwrite(str(output_dir / f"{base_name}_room_markers.png"), markers*(255/markers.max()))
-        cv2.imwrite(str(output_dir / f"{base_name}_room_dist.png"), overlay_mask(image, dist*255))
+        if image is not None:
+            overlayed_dist = overlay_mask(image, dist*255)
+            cv2.imwrite(str(output_dir / f"{base_name}_room_dist.png"), overlayed_dist)
         print("   Colorizing regions...")
         segmented_image = colorize_regions(markers)
         cv2.imwrite(str(output_dir / f"{base_name}_room_colorized.png"), segmented_image)
 
         # Overlay the segmented image on the original
         print("   Overlaying segmented image on the original...")
-        overlayed_image = overlay_rooms(image, segmented_image)
-        cv2.imwrite(str(output_dir / f"{base_name}_room_overlay.png"), overlayed_image)
+        if image is not None:
+            overlayed_image = overlay_rooms(image, segmented_image)
+            cv2.imwrite(str(output_dir / f"{base_name}_room_overlay.png"), overlayed_image)
 
         return True
         
@@ -138,6 +141,8 @@ if __name__ == "__main__":
 # python src/predict_rooms.py -i data/val/masks_wd -o results_room_gt/val --img data/val/images/ --file_suffix=".png"
 
 
-# python src/predict_rooms.py -i results_wall/full/ -o results_room/train/ --img data/train/images/
+# python src/predict_rooms.py -i results_wall/walls/ -o results_room/walls/ --img data/walls_png/
+# python src/predict_rooms.py -i results_wall/rooms/ -o results_room/rooms/ --img data/rooms_png/
+
 # python src/predict_rooms.py -i results_wall/train/ -o results_room/train/ --img data/train/images/
 # python src/predict_rooms.py -i results_wall/val/ -o results_room/val/ --img data/val/images/

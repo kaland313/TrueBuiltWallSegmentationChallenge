@@ -33,6 +33,17 @@ def process_architectural_drawing(input_path, output_dir, model_ckpt="model.ckpt
         # Get the base filename without extension
         base_name = input_path.stem
 
+        # # Run edge detection on the image and add edges to the image
+        # print("   Running edge detection...")
+        # edges = cv2.Canny(image, 100, 200)
+        # # Thicken edges for better visibility
+        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        # edges = cv2.dilate(edges, kernel, iterations=1)
+        # # Draw edges on the original image
+        # image = 255-edges
+        # # image[edges > 0] = 0
+        # cv2.imwrite(str(output_dir / f"{base_name}_edges.png"), image)
+
         # Segment the image using the cnn model
         print("   Running CNN model for segmentation...")
         model = load_model(model_ckpt, gpu_id)
@@ -124,5 +135,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python src/predict.py data/png_input/ -o results_wall/full
-# python src/predict.py data/train/images/ -o results_wall/train
+# python src/predict.py data/walls_png/ -o results_wall/walls -m model_wd_aug_fill.ckpt 
+# python src/predict.py data/rooms_png/ -o results_wall/rooms
+# python src/predict.py data/train/images/ -o results_wall/train -m model_wd_aug_fill.ckpt 
+# python src/predict.py data/val/images/ -o results_wall/val -m model_wd_aug_fill.ckpt 

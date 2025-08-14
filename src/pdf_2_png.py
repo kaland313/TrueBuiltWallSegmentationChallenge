@@ -58,7 +58,7 @@ def convert_pdf_to_png(pdf_path, output_dir, dpi=300):
 def main():
     parser = argparse.ArgumentParser(description="Convert PDF files to high-quality PNG images")
     parser.add_argument("input_folder", help="Folder containing PDF files")
-    parser.add_argument("-o", "--output", help="Output folder (default: input_folder/png_output)")
+    parser.add_argument("output_folder", help="Output folder")
     parser.add_argument("-d", "--dpi", type=int, default=300, 
                        help="DPI for output images (default: 300)")
     
@@ -71,10 +71,7 @@ def main():
         sys.exit(1)
     
     # Set output folder
-    if args.output:
-        output_folder = Path(args.output)
-    else:
-        output_folder = input_folder / "png_output"
+    output_folder = Path(args.output_folder)
     
     # Create output folder if it doesn't exist
     output_folder.mkdir(parents=True, exist_ok=True)

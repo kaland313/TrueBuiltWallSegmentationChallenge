@@ -50,16 +50,17 @@ def get_transforms():
     """Define augmentation transforms using torchvision v2"""
     
     train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(size=(512, 512), scale=(0.08, 0.5)), 
+        transforms.RandomResizedCrop(size=(512, 512), scale=(0.01, 0.5)), 
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
-        transforms.RandomRotation(degrees=90, expand=False),
+        transforms.RandomRotation(degrees=180, expand=False),
         transforms.RandomAffine(
             degrees=15,
             translate=(0.1, 0.1),
             scale=(0.9, 1.1),
             shear=None
         ),
+        transforms.RandomApply([transforms.GaussianBlur(kernel_size=5, sigma=(0.1, 2.0))], p=0.3),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.0, hue=0.0),    
         # Images are grayscae, 0-255, masks are 0-1
     ])

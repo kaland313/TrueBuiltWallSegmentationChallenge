@@ -186,8 +186,8 @@ feature_tsv/*
 *.onnx
 
 data/intermediaries*
-data/png_input
-data/results
+data/rooms_png
+data/walls_png
 outputs/
 results*
 artifacts/

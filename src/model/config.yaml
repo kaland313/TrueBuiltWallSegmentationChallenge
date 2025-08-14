@@ -1,5 +1,5 @@
 # Common configuration for segmentation model training
-experiment_name: "ResNet34-DiceLoss-WallDoor"  # Experiment name
+experiment_name: "Debug"  # Experiment name
 seed: 42
 
 # Data configuration
@@ -30,7 +30,7 @@ training:
   save_dir: "./checkpoints"   # Directory to save model checkpoints
   save_top_k: 3          # Number of best models to keep
   monitor_metric: "val_loss"  # Metric to monitor for checkpointing
-  loss_fn: "DiceLoss"    # Loss function to use (DiceLoss, FocalLoss, MCCLoss)
+  loss_fn: "DiceLoss"    # Loss function to use (for now only DiceLoss is supported)
 
 # Logging configuration
 logging:

@@ -39,17 +39,11 @@ class SegmentationModel(pl.LightningModule):
         if self.out_classes == 1:
             if loss_fn == "DiceLoss":
                 self.criterion = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
-            elif loss_fn == "FocalLoss":
-                self.criterion = smp.losses.FocalLoss(smp.losses.BINARY_MODE)
-            elif loss_fn == "MCCLoss":
-                self.criterion = smp.losses.MCCLoss()
             else:
                 raise ValueError(f"Unsupported loss function: {loss_fn}")
         else:
             if loss_fn == "DiceLoss":
                 self.criterion = smp.losses.DiceLoss(smp.losses.MULTICLASS_MODE, from_logits=True)
-            elif loss_fn == "FocalLoss":
-                self.criterion = smp.losses.FocalLoss(smp.losses.MULTICLASS_MODE)
             else:
                 raise ValueError(f"Unsupported loss function: {loss_fn}")
 
@@ -64,10 +58,12 @@ class SegmentationModel(pl.LightningModule):
 
         if self.out_classes  > 1:
             # For multiclass, we need to apply softmax to outputs
-            outputs = torch.argmax(outputs, dim=1, keepdim=True)
+            preds = torch.argmax(outputs, dim=1, keepdim=True).detach()
+        else:
+            preds = (torch.sigmoid(outputs) > 0.5).float().detach()
         
         # Calculate IoU
-        tp, fp, fn, tn = smp.metrics.get_stats(outputs,
+        tp, fp, fn, tn = smp.metrics.get_stats(preds,
                                                masks, 
                                                mode='binary' if self.out_classes == 1 else 'multiclass',
                                                threshold=0.5 if self.out_classes == 1 else None,
@@ -78,19 +74,15 @@ class SegmentationModel(pl.LightningModule):
         self.log(f'{mode}_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
         # log images and masks
         if mode == "val":
-            if self.out_classes == 1:
-                outputs = torch.sigmoid(outputs.detach())
-                outputs = (outputs > 0.5).cpu().numpy().astype('uint8')
-            else:
-                outputs = torch.argmax(outputs, dim=1).cpu().numpy().astype('uint8')
+            preds = preds.cpu().numpy().astype('uint8')
             masks = masks.cpu().numpy().astype('uint8')
             images = images.cpu().numpy().transpose(0, 2, 3, 1).astype('uint8')
 
-            for i in range(len(images)):
+            for i in range(min(4, len(images))):
                 wandb.log(
                     {f"val_image_{i}" : wandb.Image(images[i], masks={
                         "predictions" : {
-                            "mask_data" : outputs[i].squeeze(),
+                            "mask_data" : preds[i].squeeze(),
                             "class_labels" : self.class_labels
                         },
                         "ground_truth" : {
