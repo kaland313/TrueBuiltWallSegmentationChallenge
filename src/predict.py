@@ -34,17 +34,6 @@ def process_architectural_drawing(
         # Get the base filename without extension
         base_name = input_path.stem
 
-        # # Run edge detection on the image and add edges to the image
-        # print("   Running edge detection...")
-        # edges = cv2.Canny(image, 100, 200)
-        # # Thicken edges for better visibility
-        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        # edges = cv2.dilate(edges, kernel, iterations=1)
-        # # Draw edges on the original image
-        # image = 255-edges
-        # # image[edges > 0] = 0
-        # cv2.imwrite(str(output_dir / f"{base_name}_edges.png"), image)
-
         # Segment the image using the cnn model
         print("   Running CNN model for segmentation...")
         model = load_model(model_ckpt, gpu_id)
