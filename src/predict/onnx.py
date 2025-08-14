@@ -3,6 +3,17 @@ import cv2
 import numpy as np
 import onnxruntime
 
+def preference_bias(logits, preferred_classes, strength=0.1):
+    """Bias scaled to local logit range"""
+    logit_std = logits.std()
+    bias_value = strength * logit_std
+    
+    bias = np.zeros_like(logits)
+    for c in preferred_classes:
+        bias[c, ...] = bias_value
+    
+    return logits + bias
+
 
 def predict(image, onnx_session):
     """Run prediction on a single image using the trained model.
@@ -35,6 +46,7 @@ def predict(image, onnx_session):
     if pred.shape[0]==1: # Support binary and multi-class segmentation
         pred_mask = (pred > 0).squeeze().astype('uint8') * 255
     else:
+        pred = preference_bias(pred, preferred_classes=[1,2], strength=1.2)
         pred_mask = np.argmax(pred, axis=0)
 
     # Remove padding

@@ -4,11 +4,10 @@ import torch
 
 from model import SegmentationModel
 
-def preference_bias(logits, preferred_classes, strength=0.1):
+def preference_bias(logits, preferred_classes, strength=1.):
     """Bias scaled to local logit range"""
-    logit_std = logits.std(keepdim=True)
+    logit_std = logits.std()
     bias_value = strength * logit_std
-    # print(f"Applying bias of {bias_value} to preferred classes: {preferred_classes}")
     
     bias = torch.zeros_like(logits)
     for c in preferred_classes:
@@ -45,7 +44,7 @@ def predict(image, model):
         if pred.shape[0]==1: # Support binary and multi-class segmentation
             pred_mask = (pred_mask > 0).cpu().numpy().astype('uint8') * 255
         else:
-            pred = preference_bias(pred, preferred_classes=[1,2], strength=1.2)
+            pred = preference_bias(pred, preferred_classes=[1,2], strength=1.)
             pred_mask = torch.argmax(pred, dim=0).cpu().numpy()
         # Remove padding
         if pad_h > 0 or pad_w > 0:
