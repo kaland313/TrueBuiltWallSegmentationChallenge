@@ -7,7 +7,7 @@ data:
   train_data_dir: "./data/train"  # Path to training dataset directory
   val_data_dir: "./data/val"      # Path to validation dataset directory
   image_folder: "images"          # Folder containing images
-  mask_folder: "masks_wd"         # Folder containing masks (wall / not
+  mask_folder: "masks_wd"         # Folder containing masks
   num_workers: 4                  # Number of data loader workers
   repeats: 6                      # Number of times to repeat the dataset for training
 

@@ -65,9 +65,9 @@ def load_model(model_ckpt="model.ckpt", gpu_id=0):
     if torch.cuda.is_available() and gpu_id >= 0:
         device = torch.device(f'cuda:{gpu_id}')
         model.to(device)
-        print(f"Using GPU: {gpu_id}")
+        print(f"   Using GPU: {gpu_id}")
     else:
         device = torch.device('cpu')
-        print("Using CPU")
+        print("   Using CPU")
     
     return model

@@ -8,9 +8,9 @@ import numpy as np
 from predict.torch import load_model, predict
 from predict.common import (
     predict_in_patches,
-    clean_mask_via_morph_ops,
-    overlay_mask
+    clean_mask_via_morph_ops
 )
+from img_proc_utils import overlay_mask
 
 def process_architectural_drawing(input_path, output_dir, model_ckpt="model.ckpt", gpu_id=0):
     """
@@ -37,27 +37,20 @@ def process_architectural_drawing(input_path, output_dir, model_ckpt="model.ckpt
         print("   Running CNN model for segmentation...")
         model = load_model(model_ckpt, gpu_id)
         predicted_mask = predict_in_patches(image, model, pred_fn=predict)
-        segmented_img_path = output_dir / f"{base_name}_segmented.png"
-        cv2.imwrite(str(segmented_img_path), predicted_mask*100)
-        print(f"    Saved: {segmented_img_path.name}")
+        cv2.imwrite(str(output_dir / f"{base_name}_segmented.png"), predicted_mask*100)
 
         # Clean the mask using morphological operations
         print("   Cleaning mask with morphological operations...")
         cleaned_mask = clean_mask_via_morph_ops(predicted_mask)
-        cleaned_img_path = output_dir / f"{base_name}_cleaned.png"
-        cv2.imwrite(str(cleaned_img_path), cleaned_mask*100)
-        print(f"    Saved: {cleaned_img_path.name}")
+        cleaned_mask = (cleaned_mask * (255//cleaned_mask.max())).astype(np.uint8)
+        cv2.imwrite(str(output_dir / f"{base_name}_cleaned.png"), cleaned_mask)
 
         # Overlay the initial and cleaned masks on the original image
         print("   Overlaying masks on the original image...")
         overlayed_initial = overlay_mask(image, predicted_mask)
-        overlayed_initial_path = output_dir / f"{base_name}_initial_overlay.png"
-        cv2.imwrite(str(overlayed_initial_path), overlayed_initial)
-        print(f"    Saved: {overlayed_initial_path.name}")
+        cv2.imwrite(str(output_dir / f"{base_name}_segmented_overlay.png"), overlayed_initial)
         overlayed_cleaned = overlay_mask(image, cleaned_mask)
-        overlayed_cleaned_path = output_dir / f"{base_name}_cleaned_overlay.png"
-        cv2.imwrite(str(overlayed_cleaned_path), overlayed_cleaned)
-        print(f"    Saved: {overlayed_cleaned_path.name}")
+        cv2.imwrite(str(output_dir / f"{base_name}_cleaned_overlay.png"), overlayed_cleaned)
 
         return True
         
@@ -67,11 +60,13 @@ def process_architectural_drawing(input_path, output_dir, model_ckpt="model.ckpt
 
 def main():
     parser = argparse.ArgumentParser(description="Process architectural drawings: remove non-black colors and thin lines")
-    parser.add_argument("input_path", help="Input PNG file or folder containing PNG files")
-    parser.add_argument("-o", "--output", help="Output folder (default: data/intermediaries)")
+    parser.add_argument("input_path", 
+                        help="Input PNG file or folder containing PNG files")
+    parser.add_argument("-o", "--output", default="./results_wall/",
+                        help="Output folder (default: ./resuts_wall/)")
     parser.add_argument("-g", "--gpu_id", type=int, default=0,
                         help="GPU ID to use for inference (default: 0)")
-    parser.add_argument("-m", "--model_ckpt", default="model.ckpt",
+    parser.add_argument("-m", "--model_ckpt", default="model_wd.ckpt",
                         help="Path to the model checkpoint (default: model.ckpt)")
     
     args = parser.parse_args()
@@ -83,10 +78,7 @@ def main():
         return
     
     # Set output folder
-    if args.output:
-        output_folder = Path(args.output)
-    else:
-        output_folder = Path("data/intermediaries")
+    output_folder = Path(args.output)
     
     # Create output folder if it doesn't exist
     output_folder.mkdir(parents=True, exist_ok=True)
@@ -131,3 +123,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# python src/predict.py data/png_input/ -o results_wall/full
+# python src/predict.py data/train/images/ -o results_wall/train

@@ -1,7 +1,7 @@
 from pathlib import Path
 import torch
 
-from model import SegmentationModel
+from src.model.model import SegmentationModel
 
 def load_and_save_onnx(ckpt, output_path="model.onnx", input_shape=(1, 3, 512, 512)):
     """Load a trained model and save it as ONNX format."""

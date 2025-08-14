@@ -1,8 +1,6 @@
 image_name=kandras_tbchallenge
 container_name=kandras_tbchallenge
-workdir_base=/workspace
-workdir=$(workdir_base)/tbchallenge
-server_port=3000
+workdir=/workspace
 host_port=3000
 onnx_model_path=$(workdir)/model_wd.onnx
 
@@ -18,8 +16,7 @@ run: build
 	--shm-size 16G \
 	--network host \
 	-e NVIDIA_VISIBLE_DEVICES=0,1 \
-	-e PYTHONPATH=$(workdir_base) \
-	-e MODEL_PATH=$(model_path) \
+	-e PYTHONPATH=$(workdir) \
 	--name $(container_name) \
 	-v $(shell pwd):$(workdir) \
 	-v /tmp:/tmp \
@@ -31,9 +28,8 @@ serve: build-serve
 	nvidia-docker run \
 	-it --rm \
 	--shm-size 16G \
-	-e PYTHONPATH=$(workdir_base) \
 	-e ONNX_MODEL_PATH=$(onnx_model_path) \
-	-p $(host_port):$(server_port) \
+	-p $(host_port):3000 \
 	--name $(container_name)_serve \
 	-v $(shell pwd):$(workdir) \
 	-w $(workdir)/src \

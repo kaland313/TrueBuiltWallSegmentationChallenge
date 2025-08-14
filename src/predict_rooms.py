@@ -48,20 +48,16 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
         # Run watershed segmentation
         print("   Running watershed segmentation...")
         markers, dist = watershed_segmentation(cleaned_mask)
+        cv2.imwrite(str(output_dir / f"{base_name}_room_markers.png"), markers*(255/markers.max()))
+        cv2.imwrite(str(output_dir / f"{base_name}_room_dist.png"), overlay_mask(image, dist*255))
         print("   Colorizing regions...")
         segmented_image = colorize_regions(markers)
-        segmented_img_path = output_dir / f"{base_name}_seg_watershed.png"
-        cv2.imwrite(str(segmented_img_path), segmented_image)
-        print(f"    Saved: {segmented_img_path.name}")
-        cv2.imwrite(str(output_dir / f"{base_name}_markers.png"), markers*(255/markers.max()))
-        cv2.imwrite(str(output_dir / f"{base_name}_dist.png"), overlay_mask(image, dist*255))
+        cv2.imwrite(str(output_dir / f"{base_name}_room_colorized.png"), segmented_image)
 
         # Overlay the segmented image on the original
         print("   Overlaying segmented image on the original...")
         overlayed_image = overlay_rooms(image, segmented_image)
-        overlayed_img_path = output_dir / f"{base_name}_seg_overlay.png"
-        cv2.imwrite(str(overlayed_img_path), overlayed_image)
-        print(f"    Saved: {overlayed_img_path.name}")
+        cv2.imwrite(str(output_dir / f"{base_name}_room_overlay.png"), overlayed_image)
 
         return True
         
@@ -71,10 +67,12 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Process architectural drawings: remove non-black colors and thin lines")
-    parser.add_argument("input_path", help="Input PNG file or folder containing PNG files")
+    parser.add_argument("-i", "--input_path", default="./results_wall/",
+                        help="Input PNG file or folder containing PNG files")
     parser.add_argument("--file_suffix", default="_segmented.png", help="File suffix to process (default: _segmented.png)")
-    parser.add_argument("-o", "--output_folder", help="Output folder")
-    parser.add_argument("-i", "--image_folder", default=None, help="Directory containing original images (default: data/images)")
+    parser.add_argument("-o", "--output_folder", default="./results_room/",
+                        help="Output folder")
+    parser.add_argument("--img", default=None, help="Directory containing original images, only used for visualization (default: None)")
     args = parser.parse_args()
     
     input_path = Path(args.input_path)
@@ -89,8 +87,8 @@ def main():
     output_folder.mkdir(parents=True, exist_ok=True)
     
     image_folder = None
-    if args.image_folder:
-        image_folder = Path(args.image_folder)
+    if args.img:
+        image_folder = Path(args.img)
         if not image_folder.exists():
             print(f"Error: Image folder '{image_folder}' does not exist.")
             image_folder = None
@@ -136,7 +134,10 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python src/room_seg.py data/train/masks_wd -o results_room_gt/train -i data/train/images/ --file_suffix=".png"
-# python src/room_seg.py results_wd/train/ -o results_room/train/ -i data/train/images/
+# python src/predict_rooms.py -i data/train/masks_wd -o results_room_gt/train --img data/train/images/ --file_suffix=".png"
+# python src/predict_rooms.py -i data/val/masks_wd -o results_room_gt/val --img data/val/images/ --file_suffix=".png"
 
-# python src/room_seg.py data/results/full_blueprints/ -o results_room/full -i data/png_input/
+
+# python src/predict_rooms.py -i results_wall/full/ -o results_room/train/ --img data/train/images/
+# python src/predict_rooms.py -i results_wall/train/ -o results_room/train/ --img data/train/images/
+# python src/predict_rooms.py -i results_wall/val/ -o results_room/val/ --img data/val/images/

@@ -189,6 +189,7 @@ data/intermediaries*
 data/png_input
 data/results
 outputs/
+results*
 artifacts/
 checkpoints/
 
