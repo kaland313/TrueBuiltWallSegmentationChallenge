@@ -11,12 +11,13 @@ from img_proc_utils import (
     overlay_rooms,
     overlay_mask,
 )
-from predict.common import clean_mask_via_morph_ops    
+from predict.common import clean_mask_via_morph_ops
+
 
 def process_architectural_drawing(input_path, output_dir, image_path=None):
     """
     Process an architectural drawing: remove non-black colors and thin lines.
-    
+
     Args:
         input_path: Path to input PNG file
         output_dir: Directory to save processed images
@@ -24,7 +25,7 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
     try:
         # Read the mask in grayscale
         mask = cv2.imread(str(input_path), cv2.IMREAD_GRAYSCALE)
-        
+
         if mask is None:
             print(f"Error: Could not read image {input_path}")
             return False
@@ -33,11 +34,11 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
             # Read the original image if provided
             image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
             if image is None:
-                print(f"Error: Could not read image {image_path}")    
+                print(f"Error: Could not read image {image_path}")
         else:
             image = None
         print(f"Processing {input_path.name}...")
-        
+
         # Get the base filename without extension
         base_name = input_path.stem
 
@@ -48,57 +49,80 @@ def process_architectural_drawing(input_path, output_dir, image_path=None):
         # Run watershed segmentation
         print("   Running watershed segmentation...")
         markers, dist = watershed_segmentation(cleaned_mask)
-        cv2.imwrite(str(output_dir / f"{base_name}_room_markers.png"), markers*(255/markers.max()))
+        cv2.imwrite(
+            str(output_dir / f"{base_name}_room_markers.png"),
+            markers * (255 / markers.max()),
+        )
         if image is not None:
-            overlayed_dist = overlay_mask(image, dist*255)
+            overlayed_dist = overlay_mask(image, dist * 255)
             cv2.imwrite(str(output_dir / f"{base_name}_room_dist.png"), overlayed_dist)
         print("   Colorizing regions...")
         segmented_image = colorize_regions(markers)
-        cv2.imwrite(str(output_dir / f"{base_name}_room_colorized.png"), segmented_image)
+        cv2.imwrite(
+            str(output_dir / f"{base_name}_room_colorized.png"), segmented_image
+        )
 
         # Overlay the segmented image on the original
         print("   Overlaying segmented image on the original...")
         if image is not None:
             overlayed_image = overlay_rooms(image, segmented_image)
-            cv2.imwrite(str(output_dir / f"{base_name}_room_overlay.png"), overlayed_image)
+            cv2.imwrite(
+                str(output_dir / f"{base_name}_room_overlay.png"), overlayed_image
+            )
 
         return True
-        
+
     except Exception as e:
         print(f"   Error processing {input_path}: {str(e)}")
         return False
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Process architectural drawings: remove non-black colors and thin lines")
-    parser.add_argument("-i", "--input_path", default="./results_wall/",
-                        help="Input PNG file or folder containing PNG files")
-    parser.add_argument("--file_suffix", default="_segmented.png", help="File suffix to process (default: _segmented.png)")
-    parser.add_argument("-o", "--output_folder", default="./results_room/",
-                        help="Output folder")
-    parser.add_argument("--img", default=None, help="Directory containing original images, only used for visualization (default: None)")
+    parser = argparse.ArgumentParser(
+        description="Process architectural drawings: remove non-black colors and thin lines"
+    )
+    parser.add_argument(
+        "-i",
+        "--input_path",
+        default="./results_wall/",
+        help="Input PNG file or folder containing PNG files",
+    )
+    parser.add_argument(
+        "--file_suffix",
+        default="_segmented.png",
+        help="File suffix to process (default: _segmented.png)",
+    )
+    parser.add_argument(
+        "-o", "--output_folder", default="./results_room/", help="Output folder"
+    )
+    parser.add_argument(
+        "--img",
+        default=None,
+        help="Directory containing original images, only used for visualization (default: None)",
+    )
     args = parser.parse_args()
-    
+
     input_path = Path(args.input_path)
-    
+
     if not input_path.exists():
         print(f"Error: Input path '{input_path}' does not exist.")
         return
 
     output_folder = Path(args.output_folder)
-    
+
     # Create output folder if it doesn't exist
     output_folder.mkdir(parents=True, exist_ok=True)
-    
+
     image_folder = None
     if args.img:
         image_folder = Path(args.img)
         if not image_folder.exists():
             print(f"Error: Image folder '{image_folder}' does not exist.")
             image_folder = None
-        
+
     # Create output folder if it doesn't exist
     output_folder.mkdir(parents=True, exist_ok=True)
-    
+
     # Process files
     if input_path.is_file():
         # Single file
@@ -114,25 +138,28 @@ def main():
     if not png_files:
         print(f"No files with suffix {args.file_suffix} found in '{input_path}'")
         return
-    
+
     print(f"Found {len(png_files)} image file(s)")
     print(f"Output folder: {output_folder}")
     print("-" * 60)
-    
+
     # Process each image
     successful = 0
     for mask_file in png_files:
-        image_file = image_folder / mask_file.name.replace(args.file_suffix, ".png") if image_folder else None
-        if process_architectural_drawing(
-            mask_file, 
-            output_folder,
-            image_file
-        ):
+        image_file = (
+            image_folder / mask_file.name.replace(args.file_suffix, ".png")
+            if image_folder
+            else None
+        )
+        if process_architectural_drawing(mask_file, output_folder, image_file):
             successful += 1
         print()
-    
+
     print("-" * 60)
-    print(f"Processing complete: {successful}/{len(png_files)} files processed successfully")
+    print(
+        f"Processing complete: {successful}/{len(png_files)} files processed successfully"
+    )
+
 
 if __name__ == "__main__":
     main()

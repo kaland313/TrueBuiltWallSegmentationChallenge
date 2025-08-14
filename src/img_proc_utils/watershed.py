@@ -6,7 +6,7 @@ from tqdm import trange
 
 def watershed_segmentation(mask):
     """Apply watershed segmentation to a binary mask.
-    Based on: https://docs.opencv2.org/3.4/d2/dbd/tutorial_distance_transform.html    
+    Based on: https://docs.opencv2.org/3.4/d2/dbd/tutorial_distance_transform.html
     Args:
         mask: Binary mask image
     Returns:
@@ -20,7 +20,7 @@ def watershed_segmentation(mask):
 
     # Perform the distance transform algorithm
     dist = cv2.distanceTransform(mask, cv2.DIST_L2, 3)
-    # Normalize the distance image by subtracting the minimum value 
+    # Normalize the distance image by subtracting the minimum value
     dist = dist - dist.min()
     # Threshold the image to obtain "peaks", these will be the markers for the foreground objects
     # The arbitrary threshold value of 32 is chosen empirically
@@ -28,8 +28,10 @@ def watershed_segmentation(mask):
     dist_threshold = dist > 32
 
     # Identify connected components in the thresholded distance image
-    dist_uint8 = (dist_threshold * 255).astype(np.uint8) 
-    num_labels, markers, stats, _ = cv2.connectedComponentsWithStats(dist_uint8, connectivity=4, ltype=cv2.CV_32S, stats=cv2.CC_STAT_AREA)
+    dist_uint8 = (dist_threshold * 255).astype(np.uint8)
+    num_labels, markers, stats, _ = cv2.connectedComponentsWithStats(
+        dist_uint8, connectivity=4, ltype=cv2.CV_32S, stats=cv2.CC_STAT_AREA
+    )
 
     # Apply a higher distance threshold to the largest component(s)
     # This is to help differentiate between the large outside areas and rooms adjecent to them. The sample plans have 1-2 such large areas.
@@ -40,18 +42,20 @@ def watershed_segmentation(mask):
     top_areas = top_areas[areas[top_areas] > 1_000_000]
     if len(top_areas) > 0:
         # add 1 to the indices, because the markers array starts from 1
-        top_areas += 1  
+        top_areas += 1
         top_areas_mask = np.isin(markers, top_areas)
         dist[~top_areas_mask] = 0
         dist_threshold_large = dist > 100
-        # Merge the two distance maps 
+        # Merge the two distance maps
         dist_threshold[top_areas_mask] = dist_threshold_large[top_areas_mask]
 
         dist_uint8 = (dist_threshold * 255).astype(np.uint8)
-        num_labels, markers = cv2.connectedComponents(dist_uint8, connectivity=4, ltype=cv2.CV_32S)
-       
+        num_labels, markers = cv2.connectedComponents(
+            dist_uint8, connectivity=4, ltype=cv2.CV_32S
+        )
+
     dist = dist_threshold
-        
+
     # Watershed expects 8-bit 3-channel image
     mask_8UC3 = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
     # Perform the watershed algorithm
@@ -60,7 +64,7 @@ def watershed_segmentation(mask):
     markers[markers == -1] = 0
 
     # Set walls to background
-    markers[mask==0] = 0
+    markers[mask == 0] = 0
 
     # Compare the four corners of the image, if all belong to the same region, set them to background. Look at offset = 3 pixels from the exact corners.
     offset = 3
@@ -69,7 +73,7 @@ def watershed_segmentation(mask):
         markers[offset, offset],
         markers[offset, w - offset - 1],
         markers[h - offset - 1, offset],
-        markers[h - offset - 1, w - offset - 1]
+        markers[h - offset - 1, w - offset - 1],
     ]
     if len(set(corners)) == 1:
         # If all corners belong to the same region, set them to background
