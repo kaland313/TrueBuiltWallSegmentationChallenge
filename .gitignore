@@ -181,7 +181,6 @@ feature_scatterplot_2d_overplotted/*
 feature_umaps/*
 feature_tsv/*
 
-*.pdf
 *.ckpt
 *.onnx
 
