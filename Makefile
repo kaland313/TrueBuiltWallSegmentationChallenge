@@ -2,7 +2,7 @@ image_name=kandras_tbchallenge
 container_name=kandras_tbchallenge
 workdir=/workspace
 host_port=3000
-onnx_model_path=$(workdir)/model_wd.onnx
+onnx_model_path=$(workdir)/model.onnx
 
 build:
 	docker build --file docker/Dockerfile --tag $(image_name)  .
@@ -26,6 +26,18 @@ run: build
 
 serve: build-serve
 	nvidia-docker run \
+	-it --rm \
+	--shm-size 16G \
+	-e ONNX_MODEL_PATH=$(onnx_model_path) \
+	-p $(host_port):3000 \
+	--name $(container_name)_serve \
+	-v $(shell pwd):$(workdir) \
+	-w $(workdir)/src \
+	$(image_name)_serve \
+	uvicorn api:app --host 0.0.0.0 --port 3000
+
+serve-cpu: build-serve
+	docker run \
 	-it --rm \
 	--shm-size 16G \
 	-e ONNX_MODEL_PATH=$(onnx_model_path) \

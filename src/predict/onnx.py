@@ -54,6 +54,25 @@ def predict(image, onnx_session):
         pred_mask = pred_mask[:h, :w]
     return pred_mask
 
+
+def check_gpu_availability():
+    """
+    Check if CUDAExecutionProvider is available and 
+    if the GPU is actually accessible.
+    """
+    gpu_available = False
+    if "CUDAExecutionProvider" in onnxruntime.get_available_providers():
+        try:
+            # Try to detect GPU devices
+            import subprocess
+            result = subprocess.run(['nvidia-smi', '-L'], 
+                                  capture_output=True, text=True, timeout=5)
+            gpu_available = result.returncode == 0 and 'GPU' in result.stdout
+        except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+            gpu_available = False
+    return gpu_available
+
+
 def load_model(onnx_model_path="model.onnx"):
     """Load the trained segmentation model from checkpoint.
     Args:
@@ -62,8 +81,15 @@ def load_model(onnx_model_path="model.onnx"):
         Loaded model
     """
     assert os.path.exists(onnx_model_path), f"Model file {onnx_model_path} does not exist."
-    session = onnxruntime.InferenceSession(onnx_model_path,
-                                           providers=["CUDAExecutionProvider",
-                                                      "CPUExecutionProvider"])
+
+    if check_gpu_availability():
+        providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    else:
+        providers = ["CPUExecutionProvider"]
+   
+    session = onnxruntime.InferenceSession(
+        onnx_model_path,
+        providers=providers
+    )
 
     return session
