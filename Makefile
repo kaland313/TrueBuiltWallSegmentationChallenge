@@ -24,7 +24,7 @@ run: build
 	$(image_name) \
 	/bin/bash
 
-serve: build-serve
+serve-gpu: build-serve
 	nvidia-docker run \
 	-it --rm \
 	--shm-size 16G \
@@ -48,8 +48,8 @@ serve-cpu: build-serve
 	$(image_name)_serve \
 	uvicorn api:app --host 0.0.0.0 --port 3000
 	
-make stop:
+stop:
 	docker stop $(container_name)
 
-make stop-serve:
+stop-serve:
 	docker stop $(container_name)_serve

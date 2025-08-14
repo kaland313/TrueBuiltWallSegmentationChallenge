@@ -1,8 +1,9 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import argparse
 from pathlib import Path
 import cv2
-import torch
-from tqdm import tqdm
 import numpy as np
 
 from predict.torch import load_model, predict
@@ -157,8 +158,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# python src/predict.py data/walls_png/ -o results_wall/walls -m model_wd_aug_fill.ckpt
-# python src/predict.py data/rooms_png/ -o results_wall/rooms
-# python src/predict.py data/train/images/ -o results_wall/train -m model_wd_aug_fill.ckpt
-# python src/predict.py data/val/images/ -o results_wall/val -m model_wd_aug_fill.ckpt

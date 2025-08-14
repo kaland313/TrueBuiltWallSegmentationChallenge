@@ -1,9 +1,9 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import argparse
 from pathlib import Path
 import cv2
-import torch
-from tqdm import tqdm
-import numpy as np
 
 from img_proc_utils import (
     watershed_segmentation,
@@ -163,13 +163,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# python src/predict_rooms.py -i data/train/masks_wd -o results_room_gt/train --img data/train/images/ --file_suffix=".png"
-# python src/predict_rooms.py -i data/val/masks_wd -o results_room_gt/val --img data/val/images/ --file_suffix=".png"
-
-
-# python src/predict_rooms.py -i results_wall/walls/ -o results_room/walls/ --img data/walls_png/
-# python src/predict_rooms.py -i results_wall/rooms/ -o results_room/rooms/ --img data/rooms_png/
-
-# python src/predict_rooms.py -i results_wall/train/ -o results_room/train/ --img data/train/images/
-# python src/predict_rooms.py -i results_wall/val/ -o results_room/val/ --img data/val/images/

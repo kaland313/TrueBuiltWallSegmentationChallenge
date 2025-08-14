@@ -1,3 +1,6 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import torch
 import pytorch_lightning as pl
 import segmentation_models_pytorch as smp

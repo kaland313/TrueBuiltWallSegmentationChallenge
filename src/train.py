@@ -1,11 +1,11 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
-import torchvision.transforms.v2 as transforms
-from torchvision import tv_tensors
-from torchvision.io import read_image, ImageReadMode
 from pathlib import Path
 import hydra
 from omegaconf import DictConfig, OmegaConf

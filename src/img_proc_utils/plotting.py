@@ -1,6 +1,8 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import numpy as np
 import cv2
-from tqdm import trange
 
 
 def overlay_mask(image: np.ndarray, mask: np.ndarray, alpha=0.5):
@@ -16,8 +18,8 @@ def overlay_mask(image: np.ndarray, mask: np.ndarray, alpha=0.5):
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)  # Ensure image is in BGR format
     mask_colors = (
         (237, 111, 100),  # Blue
-        (2, 118, 50), # Green
-    )  
+        (2, 118, 50),  # Green
+    )
     mask_values = np.unique(mask)
     mask_colored = np.zeros_like(image)
     for i, value in enumerate(mask_values):

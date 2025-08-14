@@ -1,7 +1,8 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import cv2
 import numpy as np
-import random
-from tqdm import trange
 
 
 def watershed_segmentation(mask):

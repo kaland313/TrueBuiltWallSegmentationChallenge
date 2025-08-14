@@ -88,7 +88,7 @@ To monitor the training I used Jaccard Index. With the small dataset, the utilit
 The API server is implemented in FastAPI and can be run using the provided [`Makefile`](Makefile).
 
 ```bash
-make serve
+make serve-gpu
 ```
 This will build the docker image for serving and start the server on `http://localhost:3000`, and you can access the API documentation at `http://localhost:3000/docs`. It requires the trained model to be present in the root directory as `model.onnx`.
 
@@ -99,6 +99,7 @@ workdir=/workspace # Mapped to the root directory of the repo
 host_port=3000
 onnx_model_path=$(workdir)/model.onnx
 ```
+To serve the model on a CPU run `make serve-cpu`.
 
 ### Example cURL
 

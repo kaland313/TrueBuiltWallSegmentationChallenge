@@ -1,3 +1,6 @@
+# Copyright (c) 2025 András Kalapos
+# Licensed under the MIT License. See LICENSE file in the project root for details.
+
 import os
 import cv2
 import numpy as np
@@ -57,11 +60,4 @@ async def run_inference(
         headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
         return Response(buffer.tobytes(), headers=headers, media_type="image/png")
     else:
-        result = {"error": f"Unsupported type: {type}"}
-
-    return JSONResponse(content=result)
-
-
-# curl -X POST -F "image=@data/train/images/A-102 .00 - 2ND FLOOR PLAN CROP.png" "http://localhost:3000/run-inference?type=wall"
-
-# uvicorn api:app --host 0.0.0.0 --port 3000
+        return None  # This should never happen, as the type is validated by FastAPI
