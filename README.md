@@ -1,9 +1,3 @@
----
-typora-copy-images-to: .github
----
-
-
-
 # TrueBuilt Wall & Room Detection Challenge
 
 This repository contains my solution for the TrueBuilt Machine Learning Engineer Test.
