@@ -96,7 +96,11 @@ To monitor the training I used Jaccard Index. With the small dataset, the utilit
 
 ## Running the API Server
 
+Download the trained weights to the root of the repository from the released [`model.onnx`](https://github.com/kaland313/TrueBuiltWallSegmentationChallenge/releases/download/v1.0/model.onnx)
+
 The API server is implemented in FastAPI and can be run using the provided [`Makefile`](Makefile).
+
+🚀 To launch the API server run: 
 
 ```bash
 make serve-gpu
