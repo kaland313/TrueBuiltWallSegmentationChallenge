@@ -1,3 +1,9 @@
+---
+typora-copy-images-to: .github
+---
+
+
+
 # TrueBuilt Wall & Room Detection Challenge
 
 This repository contains my solution for the TrueBuilt Machine Learning Engineer Test.
@@ -20,12 +26,19 @@ It contains implementations for the following tasks:
 | ![](.github/A-102%20.00%20-%202ND%20FLOOR%20PLAN_cleaned_overlay.png) | ![](.github/A-102%20.00%20-%202ND%20FLOOR%20PLAN_segmented_room_overlay.png) |
 | ![](.github/A-190A_cleaned_overlay.png)                      | ![](/.github/A-190A_segmented_room_overlay.png)              |
 
-Highlights:
-- :arrows_clockwise: Accuracy generalises to all regions of all blueprints (Walls and Rooms dataset)
-- :o: Curved, angled walls detected as well
-- :door: Doorways, windows detected
+### Highlights
 
-[[:point_right: :framed_picture: See Release for results on all full blueprints :point_left:]()]
+|                                                              |                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![](.github/image-20250815100143412.png)                     | :globe_with_meridians: Accuracy generalises to all regions of all blueprints (Walls and Rooms dataset) |
+| ![](.github/Rooms__13_wall_overlay_crop.png)                 | :o: Curved, angled walls detected as well                    |
+| ![](.github/Walls_A0.54-FOURTH-FLOOR-REFERENCE-PLAN-Rev.1_wall_overlay_crop.png) | :door: Doorways, windows detected<br />:green_square: Walls <br />:blue_square: Windows and doors |
+| ![](.github/Walls_A-102 .00 - 2ND FLOOR PLAN_room_overlay_crop.png) | :round_pushpin: Even small rooms, closets, utility rooms identified separately |
+| ![](.github/Walls_A-102 .00 - 2ND FLOOR PLAN_room_overlay_corridor.png) | :arrow_upper_left:Most corridors on the sample blueprints identified correctly |
+
+
+
+**[:point_right: :framed_picture: See Release for results on all full blueprints :point_left:](https://github.com/kaland313/TrueBuiltWallSegmentationChallenge/releases)**
 
 ## My approach
 
@@ -51,7 +64,7 @@ Highlights:
    - :framed_picture: Heavy augmentation strategy (random cropping, distortions, etc.)
    - :hammer_and_wrench: Tools: PytorchLightning, Torchvision v2 transforms, SegmentationModelsPytorch
    - :whale: [`Dockerfile`](docker/Dockerfile) with fixed package versions provided for training
-   - :package: Trained weights [uploaded in the release]()
+   - :package: Trained weights [uploaded in the release](https://github.com/kaland313/TrueBuiltWallSegmentationChallenge/releases)
 
 3. Predict walls & Clean the predictions using morphological operations
 
@@ -118,20 +131,20 @@ Note the `-OJ` flags saves the response to a file.
 
 ## Run training and inference 
 
-### Build and run the training docker image
+### :whale: Build and run the training docker image
 
 ```bash
 make run
 ```
 This will build the docker image for training and start the container.
 
-### PDF conversion to PNG
+### :framed_picture: PDF conversion to PNG
 ```bash
 python src/pdf_2_png.py datasets/Walls/ data/walls_png
 python src/pdf_2_png.py datasets/Rooms/ data/rooms_png
 ```
 
-### Run training
+### :running: Run training
 ```bash
 python src/train.py
 ```
@@ -143,13 +156,13 @@ After the training is finished copy the best model checkpoint to the root direct
 cp artifacts/TrueBuildchallenge/<BEST_MODEL_VERSION>.ckpt model.ckpt
 ```
 
-### Convert model to ONNX for serving
+### :arrows_clockwise: Convert model to ONNX for serving
 
 ```bash
 python src/model2onnx.py model_wd_aug_fill.ckpt
 ```
 
-### Run wall segmentation predictions
+### :door: Run wall segmentation predictions
 
 To run wall segmentation predicitions on the Rooms and Walls datasets, expected to be at `data/walls_png` and `data/rooms_png`, execute the following commands:
 ```bash
@@ -164,7 +177,7 @@ python src/predict.py data/train/images/ -o results_wall/train
 python src/predict.py data/val/images/ -o results_wall/val
 ```
 
-### Run room segmentation on the wall segmentation results
+### :bed: Run room segmentation on the wall segmentation results
 The room segmentation script loads the wall segmentation results and images from the corresponding directories and matches them based on the suffixes applied to the wall segmentation result filenames. 
 
 To run room segmentation on the Rooms or Walls datasets, execute the following commands:
