@@ -26,9 +26,9 @@ It contains implementations for the following tasks:
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![](.github/image-20250815100143412.png)                     | :globe_with_meridians: Accuracy generalises to all regions of all blueprints (Walls and Rooms dataset) |
 | ![](.github/Rooms__13_wall_overlay_crop.png)                 | :o: Curved, angled walls detected as well                    |
-| ![](.github/Walls_A0.54-FOURTH-FLOOR-REFERENCE-PLAN-Rev.1_wall_overlay_crop.png) | :door: Doorways, windows detected<br />:green_square: Walls <br />:blue_square: Windows and doors |
-| ![](.github/Walls_A-102 .00 - 2ND FLOOR PLAN_room_overlay_crop.png) | :round_pushpin: Even small rooms, closets, utility rooms identified separately |
-| ![](.github/Walls_A-102 .00 - 2ND FLOOR PLAN_room_overlay_corridor.png) | :arrow_upper_left:Most corridors on the sample blueprints identified correctly |
+| ![](.github/Walls_A0.54-FOURTH-FLOOR-REFERENCE-PLAN-Rev.1_wall_overlay_crop.png) | :door: Doorways, windows detected<br />:green_square: Walls <br />:blue_square: Doors and Windows|
+| ![](.github/Walls_A-102%20.00%20-%202ND%20FLOOR%20PLAN_room_overlay_crop.png) | :round_pushpin: Even small rooms, closets, utility rooms identified separately |
+| ![](.github/Walls_A-102%20.00%20-%202ND%20FLOOR%20PLAN_room_overlay_corridor.png) | :arrow_upper_left: Corridors, rooms with irregular shape identified correctly |
 
 
 
