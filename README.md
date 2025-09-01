@@ -11,10 +11,6 @@ It contains implementations for the following tasks:
 
 *Data source and original test repo: [github.com/TrueBuiltSoftware/ml-eng-test/tree/main](https://github.com/TrueBuiltSoftware/ml-eng-test/tree/main)*
 
-👤 **Contact me**:
-- 🌐 LinkedIn: [András Kalapos (kaland)](https://www.linkedin.com/in/kaland/)
-- 📫 Email: kalapos.andras AT gmail.com
-
 ## Results using a custom trained CNN segmentation network
 
 
